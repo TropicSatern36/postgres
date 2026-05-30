@@ -1,0 +1,17 @@
+when:
+  - event: push
+    branch: main
+  - event: manual
+    branch: main
+
+skip_clone: true
+
+steps:
+    deploy:
+        image: curlimages/curl:latest
+        directory: /tmp
+        environment:
+            DEPLOY_WEBHOOK:
+                from_secret: postgres_deploy_webhook
+        commands:
+            - curl -X POST "$DEPLOY_WEBHOOK"
