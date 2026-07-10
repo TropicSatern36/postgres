@@ -8,7 +8,7 @@ services:
         ports:
             - ${POSTGRES_PORT}:${POSTGRES_PORT}
         volumes:
-            - ${APPDATA}/postgres/data:/var/lib/postgresql/data
+            - ${APPDATA}/postgres/data:/var/lib/postgresql
             - ${APPDATA}/postgres/setup:/docker-entrypoint-initdb.d:ro
         networks:
             - core_net
