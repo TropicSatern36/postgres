@@ -7,3 +7,17 @@ when:
 skip_clone: true
 
 steps:
+  apprise-alert:
+    image: curlimages/curl:latest
+    directory: /tmp
+    environment:
+      APPRISE_ENDPOINT_URL:
+        from_secret: apprise_url
+    commands:
+      - |
+        curl -X POST \
+          -F "tag=all" \
+          -F "body=Pipeline #$CI_PIPELINE_NUMBER status is $CI_PIPELINE_STATUS for $CI_REPO" \
+          "$APPRISE_ENDPOINT_URL"
+    when:
+      status: [ success, failure ]
