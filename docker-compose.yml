@@ -27,6 +27,28 @@ services:
                 constraints:
                     - node.role == manager
 
+
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        environment:
+          - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+          - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+        networks:
+          - core_net
+        healthcheck:
+            test: ["CMD", "curl", "--fail", "http://localhost/"]
+            interval: 60s
+            timeout: 10s
+            retries: 20
+            start_period: 15s
+        deploy:
+            replicas: 1
+            restart_policy:
+                condition: any
+                delay: 5s
+            placement:
+                constraints:
+                    - node.role == manager
 networks:
     core_net:
         external: true
