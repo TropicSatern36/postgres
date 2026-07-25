@@ -7,17 +7,18 @@ when:
 skip_clone: true
 
 steps:
-  apprise-alert:
-    image: curlimages/curl:latest
-    directory: /tmp
-    environment:
-      APPRISE_ENDPOINT_URL:
-        from_secret: apprise_url
-    commands:
-      - |
-        curl -X POST \
-          -F "tag=all" \
-          -F "body=Pipeline #$CI_PIPELINE_NUMBER status is $CI_PIPELINE_STATUS for $CI_REPO" \
-          "$APPRISE_ENDPOINT_URL"
-    when:
-      status: [ success, failure ]
+    notification:
+        image: appleboy/drone-discord
+        settings:
+            webhook_id:
+                from_secret: discord_webhook_id
+            webhook_token: 
+                from_secret: discord_webhook_token
+            message: |
+                **Build Details:**
+                • **Status:** {{ build.status }}
+                • **Execution:** #{{ build.number }}
+                • **Triggered By:** {{ build.author }} ({{ build.event }})
+                • **Branch:** `{{ build.branch }}`
+                • **Commit:** [{{ build.commit }}]({{ build.link }})
+                • **Message:** {{ build.message }}
