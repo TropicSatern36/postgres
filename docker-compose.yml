@@ -1,54 +1,64 @@
 services:
-    postgres:
-        image: postgres:18
-        environment:
-            - POSTGRES_USER=${POSTGRES_USER}
-            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-            - POSTGRES_DB=${POSTGRES_DB}
-        ports:
-            - ${POSTGRES_PORT}:${POSTGRES_PORT}
-        volumes:
-            - ${APPDATA}/postgres/data:/var/lib/postgresql
-            - ${APPDATA}/postgres/setup:/docker-entrypoint-initdb.d:ro
-        networks:
-            - core_net
-        healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} || exit 1"]
-            interval: 60s
-            timeout: 10s
-            retries: 20
-            start_period: 15s
-        deploy:
-            replicas: 1
-            restart_policy:
-                condition: any
-                delay: 5s
-            placement:
-                constraints:
-                    - node.role == manager
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - ${APPDATA}/postgres/data:/var/lib/postgresql
+      - ${APPDATA}/postgres/setup:/docker-entrypoint-initdb.d:ro
+    networks:
+      - core_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 20
+      start_period: 15s
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 5s
+      placement:
+        constraints:
+          - node.role == manager
 
+  libredb:
+    image: ghcr.io/libredb/libredb-studio:latest
+    environment:
+      ADMIN_EMAIL: ${LIBREDB_ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${LIBREDB_ADMIN_PASSWORD}
+      JWT_SECRET: ${LIBREDB_JWT_SECRET}
+      NEXT_PUBLIC_AUTH_PROVIDER: local
+      STORAGE_PROVIDER: postgres
+      STORAGE_POSTGRES_HOST: postgres
+      STORAGE_POSTGRES_PORT: 5432
+      STORAGE_POSTGRES_DATABASE: ${LIBREDB_DB_NAME}
+      STORAGE_POSTGRES_USER: ${LIBREDB_DB_USER}
+      STORAGE_POSTGRES_PASSWORD: ${LIBREDB_DB_PASSWORD}
+    volumes:
+      - ${APPDATA}/libredb:/app/data
+    networks:
+      - core_net
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/db/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 60s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+        delay: 5s
+      placement:
+        constraints:
+          - node.role == manager
 
-    pgadmin:
-        image: dpage/pgadmin4:latest
-        environment:
-          - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-          - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
-        networks:
-          - core_net
-        healthcheck:
-            test: ["CMD", "curl", "--fail", "http://localhost/"]
-            interval: 60s
-            timeout: 10s
-            retries: 20
-            start_period: 15s
-        deploy:
-            replicas: 1
-            restart_policy:
-                condition: any
-                delay: 5s
-            placement:
-                constraints:
-                    - node.role == manager
 networks:
-    core_net:
-        external: true
+  core_net:
+    external: true
