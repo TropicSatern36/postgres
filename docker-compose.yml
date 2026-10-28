@@ -35,7 +35,7 @@ services:
       JWT_SECRET: ${LIBREDB_JWT_SECRET}
       NEXT_PUBLIC_AUTH_PROVIDER: local
       STORAGE_PROVIDER: postgres
-      STORAGE_POSTGRES_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+      STORAGE_POSTGRES_URL: postgresql://${LIBREDB_DB_USER}:${LIBREDB_DB_PASSWORD}@postgres:5432/${LIBREDB_DB_NAME}?sslmode=disable
     volumes:
       - ${APPDATA}/libredb:/app/data
     networks:
